@@ -1,0 +1,18 @@
+--- 
+- name: Open TCP Ports 
+  firewalld:
+    port: "{{ item }}"
+    permanent: true
+    state: enabled
+    immediate: true
+  loop:
+    - 25/tcp
+    - 80/tcp
+    - 465/tcp
+    - 993/tcp
+
+- name: Restart the firewall service.
+  service:
+    name: firewalld
+    state: restarted
+    enabled: true

@@ -1,0 +1,66 @@
+--- 
+- include_vars: mailserver.yml
+
+- name: Create /etc/postfix/main.cf
+  ansible.builtin.template: 
+    src: postfix-main-cf.j2 
+    dest: /etc/postfix/main.cf
+    owner: root 
+    group: postfix 
+    mode: 0640 
+    backup: yes
+
+- name: Create /etc/postfix/master.cf
+  ansible.builtin.copy: 
+    src: postfix-master.conf
+    dest: /etc/postfix/master.cf
+    owner: root 
+    group: postfix 
+    mode: 0640 
+    backup: yes
+
+- name: Create /etc/postfix/mysql-domains.cf 
+  ansible.builtin.template: 
+    src: postfix-mysql-domains-cf.j2 
+    dest: /etc/postfix/mysql-domains.cf
+    owner: root 
+    group: postfix 
+    mode: 0640 
+    backup: yes
+
+- name: Create /etc/postfix/mysql-users.cf
+  ansible.builtin.template: 
+    src: postfix-mysql-users-cf.j2 
+    dest: /etc/postfix/mysql-users.cf
+    owner: root 
+    group: postfix 
+    mode: 0640 
+    backup: yes
+
+- name: Create /etc/postfix/mysql-aliases.cf
+  ansible.builtin.template: 
+    src: postfix-mysql-aliases-cf.j2 
+    dest: /etc/postfix/mysql-aliases.cf
+    owner: root 
+    group: postfix 
+    mode: 0640 
+    backup: yes
+
+- name: Create /etc/postfix/smtp_header_checks 
+  ansible.builtin.copy: 
+    src: postfix-smtp_header_checks
+    dest: /etc/postfix/smtp_header_checks
+    owner: root 
+    group: postfix 
+    mode: 0640 
+    backup: yes
+
+- name: Postmap /etc/postfix/smtp_header_checks
+  ansible.builtin.command: 
+    cmd: postmap /etc/postfix/smtp_header_checks
+    creates: /etc/postfix/smtp_header_checks.db
+    
+- name: Restart Postfix 
+  ansible.builtin.service: 
+    name: postfix 
+    state: restarted

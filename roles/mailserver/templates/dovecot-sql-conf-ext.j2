@@ -1,0 +1,5 @@
+driver = mysql
+connect = host=127.0.0.1 dbname=mailserver user=mailserver password={{ mailserver_password }} 
+default_pass_scheme = BLF-CRYPT
+password_query = SELECT email as user, password FROM users WHERE email='%u';
+user_query = SELECT email as user, password, '/var/mail/vhosts/%d/%n' as home FROM users WHERE email='%u';

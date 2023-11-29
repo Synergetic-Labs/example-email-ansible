@@ -1,0 +1,31 @@
+--- 
+# Set the root password from the vault. 
+- name: Set root password 
+  ansible.builtin.user: 
+    name: root 
+    password: "{{ root_password | password_hash('sha512') }}"
+  no_log: true
+
+# Given a list of users: 
+# - create the user
+# - set the initial password 
+# - Write the users authorized_keys file 
+- name: Create users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    shell: /bin/bash
+    groups: "{{ item.groups }}"
+    append: true
+    state: present
+  no_log: true
+  loop: 
+    - { name: "user", password: "{{ user_password | password_hash('sha512') }}", groups: "wheel" }
+- name: Load User SSH Keys 
+  ansible.builtin.authorized_key: 
+    user: "{{ item.name }}"
+    key: "{{ lookup('file', '../roles/base_os/files/users/' + item.name + '.pub') }}"
+    state: present
+  loop:
+    - { name: "user" }
+    

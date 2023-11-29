@@ -1,0 +1,17 @@
+---
+# A baseline set of packages for our VPS. Based on Fedora 38. 
+- name: Install packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - mosh 
+    - vim
+    - tmux 
+    - git 
+    - htop 
+    - wget 
+    - net-tools
+    - cronie
+    - firewalld
+    - lsb-release

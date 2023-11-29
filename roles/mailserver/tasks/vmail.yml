@@ -1,0 +1,27 @@
+--- 
+# Ensure user / group are created. 
+- name: Add Vmail Group 
+  group: 
+    name: vmail 
+    gid: 5000 
+    system: yes 
+    state: present
+
+- name: Add Vmail User 
+  user: 
+    name: vmail 
+    uid: 5000 
+    group: vmail 
+    shell: /usr/sbin/nologin 
+    system: yes 
+    state: present
+
+# Create /var/vmail and assign ownership to vmail user / group.
+- name: Create /var/vmail
+  ansible.builtin.file: 
+    path: /var/vmail 
+    owner: vmail 
+    group: vmail 
+    mode: '0770' 
+    state: directory
+

@@ -1,0 +1,11 @@
+--- 
+- name: Configure base OS 
+  hosts: all 
+  become: true 
+  gather_facts: true 
+
+  tasks: 
+    - name: Base OS 
+      include_role: 
+        name: ../roles/base_os 
+

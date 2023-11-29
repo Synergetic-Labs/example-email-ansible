@@ -1,0 +1,14 @@
+--- 
+mailserer_domain: 'iris.com'
+mailserver_alias: 'mail.iris.com'
+
+domains_to_add: 
+  - { domain: 'host.com' }
+  
+users_to_add:
+  - { domain: 'host.com', email: 'user@host.com', password: '{{ user_mail_password }}' }
+
+aliases_to_add: 
+  - { domain: 'host.com', source: 'root@host.com', destinations: 'user@host.com' }
+  - { domain: 'host.com', source: 'postmaster@host.com', destinations: 'user@host.com' }
+

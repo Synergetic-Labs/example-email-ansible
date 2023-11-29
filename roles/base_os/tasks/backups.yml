@@ -1,0 +1,54 @@
+--- 
+# Create /backups/borg/ to catch our backups. 
+- name: Ensure backup directory exists 
+  ansible.builtin.file: 
+    path: /backups/borg/
+    state: directory
+    owner: root
+    group: epimetheus
+    mode: '0750'
+
+# Initialise the repository with appropriate encryption. 
+- name: Initalise Borg repository
+  ansible.builtin.command: 
+    cmd: "borg init --encryption=repokey --umask=0022 /backups/borg/"
+    creates: /backups/borg/config
+  environment: 
+    BORG_PASSPHRASE: "{{ borg_passphrase }}"
+  
+  # Create a borg paper backup key for recovery in emergencies. 
+- name: Generate borg key 
+  ansible.builtin.command:
+    cmd: "borg key export --paper /backups/borg /backups/borg/borg_key.txt"
+    creates: "/backups/borg/borg_key.txt"
+  environment:
+    BORG_PASSPHRASE: "{{ borg_passphrase }}"
+
+# Save a copy of the paper key in our artifacts directory.
+- name: Fetch borg key to localhost
+  ansible.builtin.fetch:
+    src: /backups/borg/borg_key.txt
+    dest: ../artifacts/{{inventory_hostname}}-borg_key.txt
+    flat: yes
+
+# Write the borg backup script to /usr/local/sbin/borg-backup.sh
+- name: Create borg backup script 
+  ansible.builtin.template: 
+    src: borg/borg-backup-sh.j2
+    dest: /usr/local/sbin/borg-backup.sh
+    owner: root
+    group: root
+    mode: '0750'
+
+# Schedule the backups to run daily. 
+- name: Run backups every day at 3am
+  ansible.builtin.cron: 
+    name: "Borg Backup" 
+    minute: 0
+    hour: 3
+    job: "/usr/local/sbin/borg-backup.sh"
+    user: root
+
+
+
+    

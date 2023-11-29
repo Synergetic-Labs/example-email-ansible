@@ -1,0 +1,12 @@
+Include /etc/ssh/sshd_config.d/*.conf
+Port 22 
+PermitRootLogin prohibit-password 
+PasswordAuthentication no 
+ChallengeResponseAuthentication no
+KbdInteractiveAuthentication no
+UsePAM yes 
+X11Forwarding no 
+PrintMotd yes 
+#Banner none
+AcceptEnv LANG LC_*
+Subsystem       sftp    /usr/lib/openssh/sftp-server

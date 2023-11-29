@@ -1,0 +1,5 @@
+ssl = required
+ssl_cert = </etc/letsencrypt/live/{{ mailserver_alias }}/fullchain.pem
+ssl_key = </etc/letsencrypt/live/{{ mailserver_alias }}/privkey.pem
+ssl_min_protocol = TLSv1.2
+ssl_cipher_list = ALL:!DH:!kRSA:!SRP:!kDHd:!DSS:!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK:!RC4:!ADH:!LOW@STRENGTH

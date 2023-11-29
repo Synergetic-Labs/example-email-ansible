@@ -1,0 +1,10 @@
+#!/bin/bash
+
+export BORG_PASSPHRASE="{{ borg_passphrase }}" # Use the backup passphrase from the ansible vault. 
+export BORG_REPO="/backups/borg"
+TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+
+borg create --umask 0022 --stats --compression zlib --one-file-system --exclude-caches --exclude '/backups' --exclude '/dev' --exclude '/proc' --exclude '/run' --exclude '/sys' --exclude '/tmp' --exclude '/var/tmp' "$BORG_REPO::{{ ansible_hostname }}-$(date +%Y-%m-%d)" /
+borg prune --keep-daily=7 --keep-weekly=4 --keep-monthly=6
+
+#EOF

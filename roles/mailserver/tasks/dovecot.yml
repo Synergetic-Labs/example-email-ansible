@@ -1,0 +1,71 @@
+---
+- include_vars: mailserver.yml
+
+- name: Create /etc/dovecot/dovecot.conf
+  ansible.builtin.copy: 
+    src: dovecot.conf
+    dest: /etc/dovecot/dovecot.conf
+    owner: root 
+    group: root 
+    mode: 0600 
+    backup: yes
+
+- name: Create /etc/dovecot/conf.d/10-master.conf 
+  ansible.builtin.copy: 
+    src: dovecot-10-master-conf.j2 
+    dest: /etc/dovecot/conf.d/10-master.conf
+    owner: root 
+    group: root 
+    mode: 0600 
+    backup: yes
+
+- name: Create /etc/dovecot/conf.d/10-mail.conf 
+  ansible.builtin.copy: 
+    src: dovecot-10-mail-conf.j2 
+    dest: /etc/dovecot/conf.d/10-mail.conf
+    owner: root 
+    group: root 
+    mode: 0600 
+    backup: yes
+
+- name: Create /etc/dovecot/conf.d/10-auth.conf 
+  ansible.builtin.copy: 
+    src: dovecot-10-auth-conf.j2 
+    dest: /etc/dovecot/conf.d/10-auth.conf
+    owner: root 
+    group: root 
+    mode: 0600 
+    backup: yes
+
+- name: Create /etc/dovecot/dovecot-sql.conf.ext
+  ansible.builtin.template: 
+    src: dovecot-sql-conf-ext.j2 
+    dest: /etc/dovecot/dovecot-sql.conf.ext
+    owner: root 
+    group: root 
+    mode: 0600 
+    backup: yes
+
+- name: Create /etc/dovecot/conf.d/10-ssl.conf
+  ansible.builtin.template: 
+    src: dovecot-10-ssl-conf.j2 
+    dest: /etc/dovecot/conf.d/10-ssl.conf
+    owner: root 
+    group: root 
+    mode: 0600 
+    backup: yes
+
+# Fix SELinux context on /var/vmail
+- name: SElinux - Let Dovecot have full control on /var/vmail 
+  ansible.builtin.sefcontext: 
+    target: /var/vmail(/.*)? 
+    setype: dovecot_var_lib_t 
+    state: present 
+
+# Fire it up. 
+- name: Restart Dovecot 
+  ansible.builtin.service: 
+    name: dovecot 
+    state: restarted
+
+    

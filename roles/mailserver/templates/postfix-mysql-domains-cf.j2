@@ -1,0 +1,5 @@
+user = mailserver
+password = {{ mailserver_password }}
+hosts = 127.0.0.1
+dbname = mailserver
+query = SELECT name FROM domains WHERE name='%s'

@@ -1,0 +1,24 @@
+--- 
+# Ensure firewall is started as soon as possible. 
+- name: Start firewalld 
+  ansible.builtin.service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+# Enable remote access to our VPS with immediate effect. 
+- name: Firewalld - Configure Services 
+  firewalld:
+    service: "{{ item }}"
+    permanent: yes
+    state: enabled
+    immediate: yes
+  loop:
+    - ssh
+    - mosh 
+
+# Ensure firewall is enabled. 
+- name: Firewalld - enable 
+  firewalld:
+    state: enabled
+    immediate: yes

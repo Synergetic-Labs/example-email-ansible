@@ -1,0 +1,15 @@
+--- 
+# Harden SSH configuration
+- name: sshd - configuration 
+  copy: 
+    src: files/sshd/sshd_config 
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: 0644
+
+# On OVH servers, the sshd_config file is overwritten by cloud-init
+- name: Ensure /etc/ssh/sshd_config.d/50-cloud-init.conf is removed 
+  file: 
+    path: /etc/ssh/sshd_config.d/50-cloud-init.conf 
+    state: absent

@@ -1,0 +1,9 @@
+--- 
+- include_tasks: packages.yml
+- include_tasks: vmail.yml
+- include_tasks: firewall.yml
+- include_tasks: letsencrypt.yml
+- include_tasks: database.yml
+- include_tasks: dovecot.yml
+- include_tasks: postfix.yml
+- include_tasks: rspamd.yml

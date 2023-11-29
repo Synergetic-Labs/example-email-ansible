@@ -1,0 +1,102 @@
+--- 
+- include_vars: mailserver.yml
+
+# Ensure MariaDB is running. 
+- name: Ensure MariaDB Is Running 
+  ansible.builtin.service: 
+    name: mariadb 
+    state: started 
+    enabled: true
+
+# Create the Database.
+- name: Setup the mail database 
+  ansible.builtin.mysql_db:
+    name: mailserver 
+    state: present
+
+# Create a user for Postfix / Dovecot to use. 
+- name: Create mail user for the database 
+  ansible.builtin.mysql_user: 
+    name: mailserver 
+    password: "{{ mailserver_password }}" 
+    priv: "mailserver.*:ALL" 
+    host: localhost 
+    state: present
+
+# Create 3 tables: 
+# - Domains (id, name)
+# - Users (id, domain_id, password, email)
+# - Aliases (id, domain_id, source, destinations)
+- name: Create tables
+  ansible.builtin.mysql_query:
+    login_user: mailserver
+    login_password: "{{ mailserver_password }}"
+    login_db: mailserver
+    query: 
+    - "CREATE TABLE IF NOT EXISTS domains (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50) NOT NULL UNIQUE);"
+    - "CREATE TABLE IF NOT EXISTS users (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, domain_id INT NOT NULL, password VARCHAR(106) NOT NULL, email VARCHAR(120) NOT NULL UNIQUE, FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE CASCADE);"
+    - "CREATE TABLE IF NOT EXISTS aliases (id INT(11) PRIMARY KEY AUTO_INCREMENT, domain_id INT(11) NOT NULL, source VARCHAR(120) NOT NULL UNIQUE, destinations VARCHAR(255) NOT NULL, FOREIGN KEY (domain_id) REFERENCES domains(id) );"
+    single_transaction: true 
+
+# For each of our domains, add them to the database.
+- name: Add domains to the database 
+  ansible.builtin.mysql_query: 
+    login_user: mailserver
+    login_password: "{{ mailserver_password }}"
+    login_db: mailserver
+    query: >
+      INSERT INTO domains (name)
+      SELECT '{{ item.domain }}'
+      WHERE NOT EXISTS (SELECT * FROM domains WHERE name = '{{ item.domain }}');
+  loop: "{{ domains_to_add }}"
+
+# For each of our users, generate a password hash and add them to the database.
+- name: generate BLF password hashes
+  command: doveadm pw -s BLF-CRYPT -p "{{ item.password }}"
+  register: hashed_passwords 
+  loop: "{{ users_to_add }}"
+  no_log: true
+
+- name: Insert user into the database with the hashed password 
+  ansible.builtin.mysql_query: 
+    login_user: mailserver
+    login_password: "{{ mailserver_password }}"
+    login_db: mailserver
+    query: >
+      INSERT IGNORE INTO users (domain_id, password, email)
+      SELECT domains.id, '{{ item.1.stdout }}', '{{ item.0.email }}'
+      FROM domains
+      WHERE domains.name = '{{ item.0.domain }}';
+  loop: "{{ users_to_add | zip(hashed_passwords.results) }}"
+  no_log: true
+
+# For each alias, add them to the database.
+- name: Add aliases to the database 
+  ansible.builtin.mysql_query: 
+    login_user: mailserver
+    login_password: "{{ mailserver_password }}"
+    login_db: mailserver
+    query: >
+      INSERT IGNORE INTO aliases (domain_id, source, destinations)
+      SELECT domains.id, '{{ item.source }}', '{{ item.destinations }}'
+      FROM domains
+      WHERE domains.name = '{{ item.domain }}';
+  loop: "{{ aliases_to_add }}"
+
+# Ensure backups
+- name: Create database backup script 
+  ansible.builtin.copy:
+    src: mysql-backup.sh
+    dest: /usr/local/sbin/mysql-backup.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Schedule database backup daily at 3am
+  ansible.builtin.cron: 
+    name: "MySQL Backup" 
+    minute: 0
+    hour: 3
+    job: "/usr/local/sbin/mysql-backup.sh"
+    user: root
+

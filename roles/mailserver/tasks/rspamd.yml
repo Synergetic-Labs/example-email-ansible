@@ -1,0 +1,69 @@
+---
+- name: Create /etc/rspamd/local.d/milter.conf
+  ansible.builtin.copy: 
+    src: rspamd-milter.conf
+    dest: /etc/rspamd/local.d/milter.conf
+    owner: root 
+    group: root 
+    mode: 0640 
+    backup: yes
+
+- name: Create /etc/rspamd/local.d/multimap.conf
+  ansible.builtin.copy: 
+    src: rspamd-multimap.conf
+    dest: /etc/rspamd/local.d/multimap.conf
+    owner: root 
+    group: root 
+    mode: 0640 
+    backup: yes
+
+- name: Create /etc/rspamd/local.d/dkim_signing.conf 
+  ansible.builtin.copy: 
+    src: rspamd-dkim_signing.conf
+    dest: /etc/rspamd/local.d/dkim_signing.conf
+    owner: root 
+    group: root 
+    mode: 0640 
+    backup: yes
+
+- name: Create /etc/rspamd/local.d/redis.conf
+  ansible.builtin.copy: 
+    src: rspamd-redis.conf
+    dest: /etc/rspamd/local.d/redis.conf
+    owner: root 
+    group: root 
+    mode: 0640 
+    backup: yes
+
+- name: Create /etc/rspamd/local.d/worker-controller.inc
+  ansible.builtin.copy: 
+    src: rspamd-worker-controller.inc
+    dest: /etc/rspamd/local.d/worker-controller.inc
+    owner: root 
+    group: root 
+    mode: 0640 
+    backup: yes
+
+- name: Create /etc/rspamd/local.d/dmarc.conf
+  ansible.builtin.copy: 
+    src: rspamd-dmarc.conf
+    dest: /etc/rspamd/local.d/dmarc.conf
+    owner: root 
+    group: root 
+    mode: 0640 
+    backup: yes
+
+- name: Enable rspamd service 
+  become: true
+  systemd:
+    name: rspamd
+    enabled: yes
+    state: started
+    daemon_reload: yes
+
+- name: restart rspamd 
+  become: true
+  systemd:
+    name: rspamd
+    state: restarted
+    daemon_reload: yes

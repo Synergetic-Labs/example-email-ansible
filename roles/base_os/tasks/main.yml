@@ -1,0 +1,17 @@
+--- 
+- include_tasks: firewall.yml # Ensure firewalld is enabled. 
+- include_tasks: packages.yml # Install baseline packages. 
+- include_tasks: users.yml    # Configure our users. 
+- include_tasks: sshd.yml     # Harden SSHD.
+- include_tasks: backups.yml  # Configure system backups. 
+
+# We're working with AEDT. 
+- name: Set timezone to Australia/Sydney
+  ansible.builtin.timezone:
+    name: Australia/Sydney
+
+# Ensure our base image is updated. 
+- name: Update all packages 
+  ansible.builtin.package:
+    name: "*"
+    state: latest

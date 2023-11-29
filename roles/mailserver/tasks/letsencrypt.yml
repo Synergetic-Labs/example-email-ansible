@@ -1,0 +1,7 @@
+---
+- include_vars: mailserver.yml
+
+- name: Generate certificate for host alias 
+  ansible.builtin.shell: 
+    cmd: "certbot certonly --standalone --non-interactive --agree-tos --no-eff-email --email {{ certbot_email }} --domains {{ mailserver_alias }}" 
+    creates: "/etc/letsencrypt/live/{{ mailserver_alias }}/fullchain.pem"

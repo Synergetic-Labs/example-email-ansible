@@ -1,0 +1,11 @@
+--- 
+- name: Configure mailserver
+  hosts: mailservers 
+  become: true 
+  gather_facts: true 
+
+  tasks: 
+    - name: Mailserver
+      include_role: 
+        name: ../roles/mailserver
+        
